@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: btc_api
+    working_dir: /app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app
+
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui
+    container_name: btc_ui
+    working_dir: /app
+    command: streamlit run ui.py --server.port=8501 --server.address=0.0.0.0
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./app:/app
+    depends_on:
+      - api
