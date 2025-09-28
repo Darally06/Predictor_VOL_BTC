@@ -1,5 +1,7 @@
 # 🧮 Predicción de Volatilidad BTC
+
 Este proyecto permite predecir la volatilidad del precio de Bitcoin en un horizonte de 7 días, utilizando modelos entrenados sobre ventanas históricas de volatilidad anualizada. Incluye una API construida con FastAPI y una interfaz interactiva con Streamlit.
+
 ---
 
 ## Acciones
@@ -15,20 +17,26 @@ Este proyecto permite predecir la volatilidad del precio de Bitcoin en un horizo
 ```
 MINI_PRY_2/
 ├── app/
-│   ├── main.py          # Backend FastAPI
-│   ├── ui.py            # Frontend Streamlit
-│   ├── models.py        # Definiciones de modelos
-├── data/                # Datos históricos de BTC
-├── notebooks/           # Preprocesamiento, EDA, modelado
-├── Dockerfile           # Imagen Docker
-├── requirements.txt     # Dependencias
-├── start.sh             # Script de arranque
-└── render.yaml          # Configuración para Render
+│   ├── main.py              # Backend FastAPI
+│   ├── ui.py                # Frontend Streamlit
+│   ├── models.py            # Definiciones de modelos
+├── data/                    # Datos históricos de BTC
+├── notebooks/               # Preprocesamiento, EDA, modelado
+|  | figs/                   # Gráficas del rendimiento de modelos
+|  | metricas/               # CSV de métricas
+|  | models/                 # Joblib de modelos
+|  1_preprocesamiento.ipynb  # Preprocesamiento de datos
+|  2_EDA.ipynb               # Análisis exploratorio de datos
+|  3_modelo.ipynb            # Ejecución de modelos por folds
+├── Dockerfile               # Imagen Docker
+├── requirements.txt         # Dependencias
+├── start.sh                 # Script de arranque
+└── render.yaml              # Configuración para Render
 ```
 
 ---
 
-## 🚀 Cómo ejecutar localmente
+##  Para jecutar localmente
 
 ### 1. Clona el repositorio
 
@@ -54,16 +62,6 @@ docker run -p 8000:8000 -p 8501:8501 btc-volatility-app
 
 ---
 
-## 🌐 Despliegue en Render
-
-1. Sube el proyecto a GitHub.
-2. Ve a [Render.com](https://render.com) y crea un nuevo servicio web.
-3. Selecciona tu repositorio.
-4. Render detectará el `Dockerfile` y construirá la imagen.
-5. ¡Listo! Obtendrás un link público para compartir tu app.
-
----
-
 ## 📦 Requisitos
 
 - Python 3.10+
@@ -76,16 +74,5 @@ docker run -p 8000:8000 -p 8501:8501 btc-volatility-app
 
 Creado por **Daniella**  
 📍 Baranoa, Atlántico, Colombia  
-💬 Para dudas o sugerencias, abre un [issue](https://github.com/tu_usuario/mini_pry_2/issues)
-
----
-
-## 🛡️ Licencia
-
-Este proyecto está bajo la licencia MIT. Puedes usarlo, modificarlo y compartirlo libremente.
 
 ```
-
----
-
-¿Quieres que te lo prepare con tu nombre de usuario de GitHub y lo subamos directamente? También puedo ayudarte a crear el archivo `LICENSE` y configurar el repositorio para despliegue automático.
