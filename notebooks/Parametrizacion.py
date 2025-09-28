@@ -1,4 +1,6 @@
-    #   IMPORTS 
+# PARAMETRIZACIÓN
+
+    ## [Configuración] Importaciones
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
@@ -8,15 +10,13 @@ from tsxv.splitTrainValTest import split_train_val_test_groupKFold
 import time
 from itertools import product
 
-    #   CONFIGURACIONES INICIALES
+    ## [Configuración] Lectura de datos y parámetros iniciales
 btc = pd.read_csv(r"C:\Users\Hp\MACHINE\MINI_PRY_2\data\BTC_all.csv")
-btc = btc.sort_values(by='Date') 
-
 WINDOW_SIZES = [7, 14, 21, 28]
-#WINDOW_SIZES = [7]
-RANDOM_STATE = 42
 
+    ## [Función] Modelar y predecir
 def train_and_predict_mlp(X_train, y_train, X_val, params):
+
     model = MLPRegressor(
         hidden_layer_sizes=params['hidden_layer_sizes'],
         activation='relu',
@@ -26,15 +26,16 @@ def train_and_predict_mlp(X_train, y_train, X_val, params):
         max_iter=1000,
         early_stopping=True,
         validation_fraction=0.1,
-        random_state=RANDOM_STATE
+        random_state=42
     )
     model.fit(X_train, y_train)
-    # Hacer predicciones
     y_val_pred = model.predict(X_val)
+
     return y_val_pred, model
 
-
+    ## [Función] Calcular métricas
 def calculate_metrics(y_true, y_pred, y_scaler):
+
     if y_scaler is not None:
         y_true = y_scaler.inverse_transform(y_true)
         y_pred = y_scaler.inverse_transform(y_pred)
@@ -65,9 +66,7 @@ def calculate_metrics(y_true, y_pred, y_scaler):
     
     return metrics
 
-
-
-# INICIO
+    ## [Configuración] Grilla de parámetros
 param_grid = {
     'hidden_layer_sizes': [(64, 32), (100, 50),],
     'alpha': [ 0.0001, 0.001, 0.01, 0.1],
@@ -75,6 +74,7 @@ param_grid = {
 keys = list(param_grid.keys())
 combinaciones = [dict(zip(keys, values)) for values in product(*param_grid.values())]
 
+    # [Configuración] Métricas iniciales
 results = {}
 global_best = {
     'window_size': None,
@@ -83,7 +83,8 @@ global_best = {
     'metrics': None
 }
 
-# Iterar por ventana
+# [Pipeline] 
+    ## iterar por ventana
 for window_size in WINDOW_SIZES:
     print(f"\n{'='*60}")
     print(f"=== Procesando ventana de {window_size} días === \n Se usa un lag de {window_size} días")
@@ -91,24 +92,23 @@ for window_size in WINDOW_SIZES:
     best_config = None
     best_rmse = float('inf')
 
-    # Parametros
+    # Parameters
     timeSeries = btc[f'Volatil_D{window_size}']
     numInputs = window_size # Máximo de lags a usar (28 días)
-    numOutputs = 7
+    numOutputs = 7 # Días a predecir
     numJumps = 1 # Salto de ventanas (1 día)
     print(f"Parámetros: numInputs={numInputs}, numOutputs={numOutputs}, numJumps={numJumps}")
     
     # Split
     X_t, Y_t, X_v, Y_v, X_st, Y_st = split_train_val_test_groupKFold(timeSeries, numInputs, numOutputs, numJumps)
     print(f" Numero de folds generados", len(X_t))
-    
 
     i=1
     w_time = time.time()
 
+    # Iterar por combinación
     for config in combinaciones:
-        #print(f"=== Procesando la combinación {i} ===")
-        
+
         fold_results = []
         rmse_acumulado = []
         for fold in range (len(X_t)):
@@ -117,6 +117,7 @@ for window_size in WINDOW_SIZES:
             X_train, X_val, X_test = X_t[fold], X_v[fold], X_st[fold]
             Y_train, Y_val, Y_test = Y_t[fold], Y_v[fold], Y_st[fold]
             
+            # Escalar
             X_Scaler = StandardScaler()
             Y_Scaler = StandardScaler()
 
@@ -128,11 +129,14 @@ for window_size in WINDOW_SIZES:
             Y_val_S = Y_Scaler.transform(Y_val)
             Y_test_S = Y_Scaler.transform(Y_test)
 
+            # Modelar y predecir
             y_val_pred, model = train_and_predict_mlp(
                 X_train_S, Y_train_S, X_val_S, config
             )
 
+            # Calcular métricas
             val_metrics = calculate_metrics(Y_val_S, y_val_pred, Y_Scaler)
+            # Comparar por AVR_RMSE
             rmse_acumulado.append(val_metrics['avg_rmse'])
 
             fold_results.append({
@@ -142,7 +146,6 @@ for window_size in WINDOW_SIZES:
                 'metrics': val_metrics,
             })
         
-        # ===== Comparación dentro de la configuracion  =====
         rmse_promedio = np.mean(rmse_acumulado)
         metrics_summary = {
             'avg_mae': np.mean([f['metrics']['avg_mae'] for f in fold_results]),
@@ -164,7 +167,7 @@ for window_size in WINDOW_SIZES:
         'metrics_summary': best_metrics_summary,
         'time': fin_ventana
     }
-    # ===== Comparación global =====
+
     if best_rmse < global_best['rmse']:
         global_best['window_size'] = window_size
         global_best['params'] = best_config
