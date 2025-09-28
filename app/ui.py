@@ -4,9 +4,8 @@ import json
 import plotly.express as px
 import numpy as np
 import pandas as pd
-import os
 
-API_URL = os.getenv("API_URL", "http://127.0.0.1:8000/predict")
+API_URL = "http://localhost:8000/predict"
 
 st.title("📊 Predicción de Volatilidad BTC")
 st.write("Esta calculadora predice la volatilidad en un horizonte de 7 días, dadas las volatilidades en una ventana de tiempo.")
